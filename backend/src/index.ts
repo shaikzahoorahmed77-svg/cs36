@@ -43,9 +43,18 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 // ─── MongoDB connect ───────────────────────────────────────────────────────────
-await mongoose.connect(env.DATABASE_URL);
-console.log('[MongoDB] connected to', env.DATABASE_URL);
+try {
 
+    await mongoose.connect(env.DATABASE_URL);
+
+    console.log("[MongoDB] Connected successfully");
+
+} catch (error) {
+
+  const message = error instanceof Error ? error.message : String(error);
+  console.error("[MongoDB] Connection failed:", message);
+
+}
 // ─── Start ─────────────────────────────────────────────────────────────────────
 app.listen(env.PORT, () => {
   console.log(`Server running on http://localhost:${env.PORT}`);

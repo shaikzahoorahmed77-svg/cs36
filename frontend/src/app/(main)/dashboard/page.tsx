@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuestionCard } from "@/components/question-card";
 import type { Question } from "@/types";
+import { getUser } from "@/lib/api";
 
 // Mock data — replace with real API calls
 const mockQuestions: Question[] = [
@@ -62,14 +63,16 @@ const stats = [
 ];
 
 export default function DashboardPage() {
+  const user = getUser();
   const trendingQuestions = mockQuestions;
+  const firstName = user?.name?.split(" ")[0] ?? "there";
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Good morning, Jane 👋</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Good morning, {firstName} 👋</h1>
           <p className="text-muted-foreground mt-0.5">Here's your activity overview</p>
         </div>
         <Link href="/questions/ask">

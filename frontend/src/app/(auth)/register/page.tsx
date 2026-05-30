@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { authApi, setToken } from "@/lib/api";
+import { authApi, setToken, setUser } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,6 +26,7 @@ export default function RegisterPage() {
     try {
       const res = await authApi.register({ name, email, password });
       setToken(res.data.token);
+      setUser(res.data.user);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err?.response?.data?.error || "Registration failed. Please try again.");
