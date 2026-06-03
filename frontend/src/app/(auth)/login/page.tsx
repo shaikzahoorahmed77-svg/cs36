@@ -26,7 +26,7 @@ export default function LoginPage() {
       const res = await authApi.login(email, password);
       setToken(res.data.token);
       setUser(res.data.user);
-      router.push("/dashboard");
+      router.push(res.data.user?.role === "ADMIN" ? "/admin/dashboard" : "/dashboard");
     } catch (err: any) {
       setError(err?.response?.data?.error || "Login failed. Please try again.");
     } finally {

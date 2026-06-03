@@ -13,12 +13,13 @@ const paramsId = (v: string | string[]) => (Array.isArray(v) ? v[0] : v);
 // GET /questions
 router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
-    const { page, limit, status, tag } = req.query;
+    const { page, limit, status, tag, authorId } = req.query;
     const result = await listQuestions({
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       status: status as string | undefined,
       tag: typeof tag === 'string' ? tag : undefined,
+      authorId: typeof authorId === 'string' ? authorId : undefined,
     });
     res.json(result);
   } catch (err) {
@@ -87,6 +88,16 @@ router.post('/:id/answers', authenticate, async (req: AuthRequest, res) => {
   try {
     const { body } = req.body as { body: string };
     if (!body || body.length < 10) return res.status(400).json({ error: 'Answer must be at least 10 characters' });
+
+    // Reject new answers on questions that already have an approved answer
+    const { Question } = await import('../models/Question.js');
+    const question = await Question.findById(paramsId(req.params.id)).select('status');
+    if (!question) return res.status(404).json({ error: 'Question not found' });
+    if (question.status !== 'OPEN') {
+      return res.status(403).json({
+        error: `This question has already been ${question.status.toLowerCase()} and is no longer accepting new answers.`,
+      });
+    }
 
     const answer = await submitAnswer({
       body, questionId: paramsId(req.params.id), authorId: req.user!.userId,

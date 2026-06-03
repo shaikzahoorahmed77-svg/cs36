@@ -1,4 +1,11 @@
-export type UserRole = "STUDENT" | "MODERATOR" | "ADMIN";
+// User roles match backend User model (no MODERATOR — STUDENT | ADMIN only)
+export type UserRole = "STUDENT" | "ADMIN";
+
+// Question status matches backend Question model
+export type QuestionStatus = "OPEN" | "ANSWERED" | "RESOLVED" | "CLOSED";
+
+// Answer status matches backend Answer model
+export type AnswerStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface User {
   id: string;
@@ -8,9 +15,6 @@ export interface User {
   avatarUrl?: string;
   createdAt: string;
 }
-
-export type QuestionStatus = "unresolved" | "resolved" | "duplicate";
-export type AnswerStatus = "pending" | "approved" | "rejected" | "flagged";
 
 export interface Question {
   id: string;
@@ -23,7 +27,7 @@ export interface Question {
   upvotes: number;
   views: number;
   answerCount: number;
-  hasAcceptedAnswer: boolean;
+  hasAcceptedAnswer?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,22 +38,26 @@ export interface Answer {
   authorId: string;
   author: Pick<User, "id" | "name" | "avatarUrl">;
   body: string;
-  status: AnswerStatus;
-  upvotes: number;
-  downvotes: number;
+  isApproved?: boolean;
+  status?: AnswerStatus;
+  voteScore?: number;
+  upvotes?: number;
+  downvotes?: number;
   moderationScore?: number;
   createdAt: string;
+  updatedAt: string;
 }
 
+// FAQ — backend stores as { question, answer }. id normalizes _id → id.
 export interface FAQ {
   id: string;
-  questionId: string;
-  answerId: string;
-  title: string;
-  body: string;
+  question: string;
+  answer: string;
   tags: string[];
   searchCount: number;
+  authorId?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Notification {
@@ -57,7 +65,7 @@ export interface Notification {
   userId: string;
   type: "answer_received" | "answer_approved" | "faq_published" | "upvote_milestone" | "review_needed";
   referenceId: string;
-  read: boolean;
+  isRead: boolean;
   createdAt: string;
   message?: string;
 }

@@ -22,8 +22,7 @@ const studentNav = [
 
 const adminNav = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/questions/pending", label: "Question Review", icon: CheckCircle },
-  { href: "/admin/answers/pending", label: "Answer Review", icon: MessageSquare },
+  { href: "/admin/questions", label: "Questions", icon: MessageSquare },
   { href: "/admin/faqs", label: "FAQ Management", icon: FileText },
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/users", label: "User Management", icon: Users },

@@ -2,8 +2,6 @@ import { Queue, Worker } from 'bullmq';
 import { env } from '../config.js';
 import { moderate } from '../ai/moderation.js';
 import { approveAnswer, rejectAnswer } from '../services/answer.service.js';
-import { addNotifyJob } from './notifyUser.js';
-import { Answer } from '../models/Answer.js';
 
 const connection = { url: env.REDIS_URL };
 
@@ -18,11 +16,15 @@ new Worker('moderateAnswer', async (job) => {
   const result = await moderate(body);
 
   if (result.action === 'approve') {
-    await Answer.findByIdAndUpdate(answerId, { status: 'APPROVED', isApproved: true });
+    // Use approveAnswer service so FAQ is created, question marked ANSWERED,
+    // and user notification is sent — all in one place.
+    await approveAnswer(answerId);
   } else if (result.action === 'reject') {
     await rejectAnswer(answerId);
   }
   // 'flag' → stays PENDING for admin review
 
-  console.log(`[moderateAnswer] answer=${answerId} action=${result.action} score=${result.score}`);
+  if (result.hits.length) {
+    console.log(`[moderateAnswer] answer=${answerId} action=${result.action} score=${result.score} hits=${result.hits.join(', ')}`);
+  }
 }, { connection });

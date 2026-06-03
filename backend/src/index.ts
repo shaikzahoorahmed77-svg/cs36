@@ -43,18 +43,29 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 // ─── MongoDB connect ───────────────────────────────────────────────────────────
-try {
-
-    await mongoose.connect(env.DATABASE_URL);
-
-    console.log("[MongoDB] Connected successfully");
-
-} catch (error) {
-
-  const message = error instanceof Error ? error.message : String(error);
-  console.error("[MongoDB] Connection failed:", message);
-
+{
+  let attempts = 0;
+  const maxAttempts = 5;
+  while (attempts < maxAttempts) {
+    try {
+      await mongoose.connect(env.DATABASE_URL, {
+        serverSelectionTimeoutMS: 10000,
+      });
+      console.log('[MongoDB] Connected successfully');
+      break;
+    } catch (error) {
+      attempts++;
+      const message = error instanceof Error ? error.message : String(error);
+      if (attempts >= maxAttempts) {
+        console.error(`[MongoDB] Connection failed after ${maxAttempts} attempts:`, message);
+        process.exit(1);
+      }
+      console.warn(`[MongoDB] Connection attempt ${attempts} failed, retrying in 5s...`);
+      await new Promise(r => setTimeout(r, 5000));
+    }
+  }
 }
+
 // ─── Start ─────────────────────────────────────────────────────────────────────
 app.listen(env.PORT, () => {
   console.log(`Server running on http://localhost:${env.PORT}`);

@@ -7,8 +7,7 @@ import { Bell, Search, LogOut, User, ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { clearToken, clearUser, getUser } from "@/lib/api";
+import { clearToken, clearUser, getUser, notificationsApi } from "@/lib/api";
 
 interface NavbarProps {
   token: string | null;
@@ -25,7 +24,20 @@ export function Navbar({ token, onTokenChange }: NavbarProps) {
   // Re-read user whenever token changes (e.g. after login/logout)
   useEffect(() => { setUser(getUser()); }, [token]);
 
-  // TODO: fetch actual notification count from notificationsApi.list()
+  // Fetch unread notification count
+  useEffect(() => {
+    if (!token) { setUnreadNotifications(0); return; }
+    let cancelled = false;
+    notificationsApi.list()
+      .then(res => {
+        if (!cancelled) {
+          const unread = (res.data as any[]).filter((n: any) => !n.isRead).length;
+          setUnreadNotifications(unread);
+        }
+      })
+      .catch(() => { if (!cancelled) setUnreadNotifications(0); });
+    return () => { cancelled = true; };
+  }, [token]);
 
   const initials = user
     ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)

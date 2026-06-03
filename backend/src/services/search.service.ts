@@ -18,7 +18,7 @@ async function _search(query: string) {
       { $text: { $search: query } },
       { score: { $meta: 'textScore' } }
     )
-      .populate('author', 'name')
+      .populate('authorId', 'name')
       .sort({ score: { $meta: 'textScore' } })
       .limit(10),
     FAQ.find(

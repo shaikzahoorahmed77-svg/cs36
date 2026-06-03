@@ -25,6 +25,8 @@ const questionSchema = new Schema<IQuestion>(
   { timestamps: true }
 );
 
-questionSchema.index({ title: 'text', body: 'text', tags: 1 });
+// tags excluded from text index — MongoDB text indexes can't include array fields
+questionSchema.index({ title: 'text', body: 'text' }, { name: 'question_text_search' });
+questionSchema.index({ tags: 1 });
 
 export const Question = mongoose.model<IQuestion>('Question', questionSchema);
