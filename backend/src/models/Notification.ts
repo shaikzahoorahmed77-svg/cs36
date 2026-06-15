@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface INotification extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  type: 'ANSWER_RECEIVED' | 'ANSWER_APPROVED' | 'QUESTION_RESOLVED' | 'FAQ_PUBLISHED' | 'UPVOTE_RECEIVED' | 'MENTION';
+  type: 'ANSWER_RECEIVED' | 'ANSWER_APPROVED' | 'QUESTION_RESOLVED' | 'FAQ_PUBLISHED' | 'UPVOTE_RECEIVED' | 'MENTION' | 'NEW_QUESTION_ASKED' | 'NEW_ANSWER_PENDING';
   message: string;
   isRead: boolean;
   link?: string;
@@ -15,7 +15,7 @@ const notificationSchema = new Schema<INotification>(
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     type: {
       type: String,
-      enum: ['ANSWER_RECEIVED', 'ANSWER_APPROVED', 'QUESTION_RESOLVED', 'FAQ_PUBLISHED', 'UPVOTE_RECEIVED', 'MENTION'],
+      enum: ['ANSWER_RECEIVED', 'ANSWER_APPROVED', 'QUESTION_RESOLVED', 'FAQ_PUBLISHED', 'UPVOTE_RECEIVED', 'MENTION', 'NEW_QUESTION_ASKED', 'NEW_ANSWER_PENDING'],
       required: true,
     },
     message: { type: String, required: true },

@@ -58,6 +58,20 @@ router.get('/search', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
+// PATCH /questions/faqs/:id/click
+router.patch('/faqs/:id/click', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const id = paramsId(req.params.id);
+    const { incrementFAQSearchCount } = await import('../services/faq.service.js');
+    const faq = await incrementFAQSearchCount(id);
+    if (!faq) return res.status(404).json({ error: 'FAQ not found' });
+    res.json(faq);
+  } catch (err) {
+    console.error('[questions/faqs/click]', err);
+    res.status(500).json({ error: 'Failed to record FAQ view' });
+  }
+});
+
 // POST /questions/check-duplicates
 router.post('/check-duplicates', authenticate, async (req: AuthRequest, res) => {
   try {

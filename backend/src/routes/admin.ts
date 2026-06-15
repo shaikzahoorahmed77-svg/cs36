@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate, AuthRequest, requireRole } from '../middleware/auth.js';
 import { listPendingAnswers, approveAnswer, rejectAnswer, addAnswerToFAQ } from '../services/answer.service.js';
-import { listFAQs, deleteFAQ } from '../services/faq.service.js';
+import { listFAQs, deleteFAQ, createFAQWithEmbedding, updateFAQ } from '../services/faq.service.js';
 import { Question } from '../models/Question.js';
 import { User } from '../models/User.js';
 import { Answer } from '../models/Answer.js';
@@ -94,6 +94,39 @@ router.delete('/faqs/:id', async (req: AuthRequest, res) => {
   } catch (err) {
     console.error('[admin/faqs/delete]', err);
     res.status(500).json({ error: 'Failed to delete FAQ' });
+  }
+});
+
+// POST /admin/faqs
+router.post('/faqs', async (req: AuthRequest, res) => {
+  try {
+    const { question, answer, tags } = req.body;
+    if (!question || !answer) {
+      res.status(400).json({ error: 'Question and answer are required' });
+      return;
+    }
+    const faq = await createFAQWithEmbedding(question, answer, tags ?? [], req.user?.id);
+    res.status(201).json(faq);
+  } catch (err) {
+    console.error('[admin/faqs/create]', err);
+    res.status(500).json({ error: 'Failed to create FAQ' });
+  }
+});
+
+// PATCH /admin/faqs/:id
+router.patch('/faqs/:id', async (req: AuthRequest, res) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const { question, answer, tags } = req.body;
+    const faq = await updateFAQ(id, { question, answer, tags });
+    if (!faq) {
+      res.status(404).json({ error: 'FAQ not found' });
+      return;
+    }
+    res.json(faq);
+  } catch (err) {
+    console.error('[admin/faqs/update]', err);
+    res.status(500).json({ error: 'Failed to update FAQ' });
   }
 });
 

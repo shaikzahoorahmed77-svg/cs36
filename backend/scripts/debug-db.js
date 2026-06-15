@@ -13,12 +13,17 @@ async function main() {
   const answers = await Answer.find({}).populate('authorId', 'name').populate('questionId', 'title');
   const faqs = await FAQ.find({}).select('question');
 
+  const { Notification } = await import('../src/models/Notification.js');
+  const notifications = await Notification.find({}).populate('userId', 'email role');
+
   console.log('=== USERS ===');
   users.forEach(u => console.log(u.email, '-', u.role));
   console.log('\n=== QUESTIONS ===');
   questions.forEach(q => console.log(q._id.toString(), '|', q.title.slice(0,60), '| author:', q.authorId?.name, '| status:', q.status));
   console.log('\n=== ANSWERS ===');
   answers.forEach(a => console.log(a._id.toString(), '| q:', a.questionId.toString(), '| author:', a.authorId?.name, '| status:', a.status, '| approved:', a.isApproved));
+  console.log('\n=== NOTIFICATIONS ===');
+  notifications.forEach(n => console.log(n.userId?.email, '| type:', n.type, '| msg:', n.message));
   console.log('\n=== FAQ COUNT ===', await FAQ.countDocuments());
 
   await mongoose.disconnect();

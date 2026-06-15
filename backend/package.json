@@ -20,7 +20,8 @@
     "helmet": "^8.0.0",
     "ioredis": "^5.4.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^9.6.3",
+    "mongodb": "^7.3.0",
+    "mongoose": "^9.7.0",
     "openai": "^6.41.0",
     "zod": "^3.23.8"
   },

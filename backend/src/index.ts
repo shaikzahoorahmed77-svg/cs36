@@ -20,7 +20,16 @@ const app = express();
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(helmet());
-app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || origin.startsWith('http://localhost:')) {
+      callback(null, true);
+    } else {
+      callback(null, env.FRONTEND_URL);
+    }
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '1mb' }));
 
 // ─── Health ────────────────────────────────────────────────────────────────────

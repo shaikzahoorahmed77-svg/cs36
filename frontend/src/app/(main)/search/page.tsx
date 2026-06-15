@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, BookOpen, ArrowRight, Sparkles, ExternalLink } from "lucide-react";
+import { Search, BookOpen, ArrowRight, Sparkles, ExternalLink, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ function SearchContent() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [activeFAQ, setActiveFAQ] = useState<SearchResult | null>(null);
 
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim()) return;
@@ -146,9 +147,20 @@ function SearchContent() {
                 <Card
                   key={`${result.type}-${result.id}`}
                   className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
-                  onClick={() => {
-                    if (result.type === "faq") return;
-                    router.push(`/questions/${result.id}`);
+                  onClick={async () => {
+                    if (result.type === "faq") {
+                      setActiveFAQ(result);
+                      try {
+                        const updatedRes = await questionsApi.clickFaq(result.id);
+                        const newCount = updatedRes.data.searchCount ?? (result.answerCount + 1);
+                        setActiveFAQ(prev => prev && prev.id === result.id ? { ...prev, answerCount: newCount } : prev);
+                        setResults(prev => prev.map(r => r.id === result.id ? { ...r, answerCount: newCount } : r));
+                      } catch (err) {
+                        console.error("[faq-click]", err);
+                      }
+                    } else {
+                      router.push(`/questions/${result.id}`);
+                    }
                   }}
                 >
                   <CardContent className="p-5">
@@ -239,6 +251,67 @@ function SearchContent() {
                 {suggestion}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {activeFAQ && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+          onClick={() => setActiveFAQ(null)}
+        >
+          <div
+            className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border rounded-2xl shadow-2xl p-6 md:p-8 space-y-6 animate-in slide-in-from-bottom-4 duration-300 max-h-[85vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setActiveFAQ(null)}
+              className="absolute right-4 top-4 text-muted-foreground hover:text-foreground hover:bg-muted p-2 rounded-full transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Header */}
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="success" className="gap-1">
+                  <Sparkles className="h-3 w-3" /> FAQ
+                </Badge>
+                {activeFAQ.tags.map(t => (
+                  <Badge key={t} variant="outline">
+                    {t}
+                  </Badge>
+                ))}
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold leading-tight">
+                {activeFAQ.title}
+              </h2>
+            </div>
+
+            {/* Answer Body */}
+            <div className="border-t pt-5">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                Answer
+              </h3>
+              <div className="bg-muted/30 border rounded-xl p-5 md:p-6 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+                {activeFAQ.body}
+              </div>
+            </div>
+
+            {/* Footer / Stats */}
+            <div className="flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
+              <div>
+                {activeFAQ.answerCount > 0 ? (
+                  <span>Helpful answer viewed {activeFAQ.answerCount.toLocaleString()} times</span>
+                ) : (
+                  <span>Verified Official FAQ</span>
+                )}
+              </div>
+              <Button size="sm" onClick={() => setActiveFAQ(null)}>
+                Close
+              </Button>
+            </div>
           </div>
         </div>
       )}

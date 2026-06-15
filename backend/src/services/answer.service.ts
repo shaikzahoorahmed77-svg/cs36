@@ -44,6 +44,15 @@ export async function approveAnswer(id: string) {
 
   if (!populated) return null;
 
+  if (populated.isApproved || populated.status === 'APPROVED') {
+    const qId = populated.questionId?._id?.toString() ?? populated.questionId?.toString() ?? '';
+    const updatedQuestion = qId ? await Question.findById(qId).select('status') : null;
+    return {
+      answer: normalizeAnswer(populated),
+      questionStatus: updatedQuestion?.status ?? null,
+    };
+  }
+
   const rawAnswer = await Answer.findById(id).select('questionId');
   const qId: string = rawAnswer?.questionId?.toString() ?? '';
   const qTitle: string = populated.questionId?.title ?? '';

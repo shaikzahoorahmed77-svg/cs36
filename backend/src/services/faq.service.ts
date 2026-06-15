@@ -63,5 +63,16 @@ export async function createFAQWithEmbedding(
   return normalizeFAQ(faq);
 }
 
+export async function updateFAQ(
+  id: string,
+  data: { question?: string; answer?: string; tags?: string[] }
+) {
+  const faq = await FAQ.findByIdAndUpdate(id, data, { new: true });
+  if (faq && (data.question || data.answer)) {
+    await storeFAQFingerprint(faq._id.toString(), faq.question, faq.answer);
+  }
+  return faq ? normalizeFAQ(faq) : null;
+}
+
 // findSimilarFAQs is now exported from embeddings.ts — re-export for convenience
 export { findSimilarFAQs } from '../ai/embeddings.js';

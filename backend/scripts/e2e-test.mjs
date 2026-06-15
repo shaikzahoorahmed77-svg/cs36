@@ -7,6 +7,24 @@ const testEmail = `e2e_${ts}@test.com`;
 
 console.log(`Using test email: ${testEmail}`);
 
+// Pre-test cleanup: delete any existing Jane Street FAQs to avoid duplicate 409 conflicts
+try {
+  const loginRes = await api.post('/auth/login', { email: 'admin@internfaq.ai', password: 'Admin123!' });
+  const adminToken = loginRes.data.token;
+  const tempApi = axios.create({
+    baseURL: 'http://localhost:4000/api/v1',
+    headers: { Authorization: `Bearer ${adminToken}` }
+  });
+  const faqsRes = await tempApi.get('/admin/faqs');
+  const janeFaqs = faqsRes.data.faqs?.filter(f => f.question?.toLowerCase().includes('jane street') || f.question?.toLowerCase().includes('quant internship')) ?? [];
+  for (const f of janeFaqs) {
+    await tempApi.delete(`/admin/faqs/${f.id}`);
+    console.log(`Pre-cleanup: deleted FAQ id ${f.id}`);
+  }
+} catch (err) {
+  // Ignore pre-cleanup errors
+}
+
 // 1. Register a fresh test user
 let r = await api.post('/auth/register', {
   name: 'E2E Test User',
@@ -41,7 +59,8 @@ console.log('4. Question (awaiting moderation):', r.data.status, '| answerCount:
 delete api.defaults.headers.common['Authorization'];
 r = await api.post('/auth/login', { email: 'admin@internfaq.ai', password: 'Admin123!' });
 console.log('5. Admin login:', r.status, '| role:', r.data.user?.role);
-api.defaults.headers.common['Authorization'] = `Bearer ${r.data.token}`;
+const ADMIN_TOKEN = r.data.token;
+api.defaults.headers.common['Authorization'] = `Bearer ${ADMIN_TOKEN}`;
 
 // 6. Admin approves answer
 r = await api.patch(`/admin/answers/${aId}/approve`);
@@ -61,7 +80,7 @@ console.log('8. Second answer attempt (expect 403):', r.status, '|', r.data?.err
 
 // 9. Check FAQ was created
 delete api.defaults.headers.common['Authorization'];
-api.defaults.headers.common['Authorization'] = `Bearer ${r.data?.token ?? STUDENT_TOKEN}`;
+api.defaults.headers.common['Authorization'] = `Bearer ${ADMIN_TOKEN}`;
 r = await api.get('/admin/faqs');
 const faqCreated = r.data.faqs?.some(f => f.question?.toLowerCase().includes('jane street'));
 console.log('9. FAQ created for Jane Street:', faqCreated, '| total FAQs:', r.data.total);

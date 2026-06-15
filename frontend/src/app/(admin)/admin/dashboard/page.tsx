@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { BarChart3, MessageSquare, Users, BookOpen, ArrowRight, TrendingUp, Flag, CheckCircle, RefreshCw } from "lucide-react";
+import { BarChart3, MessageSquare, Users, BookOpen, ArrowRight, TrendingUp, Flag, CheckCircle, RefreshCw, Tags } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 import { adminApi } from "@/lib/api";
 
@@ -233,10 +233,13 @@ export default function AdminDashboardPage() {
       </Card>
 
       {/* Quick links */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { href: "/admin/answers/pending", label: "Review Answers", icon: MessageSquare, desc: "Moderate community answers" },
           { href: "/admin/questions", label: "Manage Questions", icon: Flag, desc: "Resolve, close, or delete questions" },
+          { href: "/admin/faqs", label: "FAQ Management", icon: BookOpen, desc: "Edit or remove FAQs" },
+          { href: "/admin/users", label: "User Management", icon: Users, desc: "Manage users and roles" },
+          { href: "/admin/categories", label: "Categories", icon: Tags, desc: "Organize tags and categories" },
           { href: "/admin/analytics", label: "Analytics", icon: BarChart3, desc: "Platform metrics" },
         ].map(({ href, label, icon: Icon, desc }) => (
           <Link key={href} href={href}>

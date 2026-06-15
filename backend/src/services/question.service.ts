@@ -1,5 +1,6 @@
 import { Question } from '../models/Question.js';
 import { Answer } from '../models/Answer.js';
+import { User } from '../models/User.js';
 import { addModerationJob } from '../queues/moderateAnswer.js';
 import { addNotifyJob } from '../queues/notifyUser.js';
 
@@ -55,6 +56,22 @@ export async function createQuestion({
   title, body, tags, authorId,
 }: { title: string; body: string; tags: string[]; authorId: string }) {
   const question = await Question.create({ title, body, tags, authorId });
+
+  // Notify all admins about the new question
+  try {
+    const admins = await User.find({ role: 'ADMIN' }).select('_id');
+    for (const admin of admins) {
+      await addNotifyJob({
+        userId: admin._id.toString(),
+        type: 'NEW_QUESTION_ASKED',
+        message: `New question asked: "${title}"`,
+        link: `/questions/${question._id.toString()}`,
+      });
+    }
+  } catch (err) {
+    console.error('[createQuestion/notifyAdmins]', err);
+  }
+
   const populated = await Question.findById(question._id).populate('authorId', 'name email');
   return normalizeQuestion(populated);
 }
@@ -122,12 +139,28 @@ export async function submitAnswer({ body, questionId, authorId }: { body: strin
 
   const question = await Question.findById(questionId).select('authorId title');
   if (question) {
+    // Notify the question author
     await addNotifyJob({
       userId: question.authorId.toString(),
       type: 'ANSWER_RECEIVED',
       message: `New answer on: "${question.title}"`,
       link: `/questions/${questionId}`,
     });
+
+    // Notify all admins about the new answer pending review
+    try {
+      const admins = await User.find({ role: 'ADMIN' }).select('_id');
+      for (const admin of admins) {
+        await addNotifyJob({
+          userId: admin._id.toString(),
+          type: 'NEW_ANSWER_PENDING',
+          message: `New answer submitted for review on: "${question.title}"`,
+          link: `/admin/answers/pending`,
+        });
+      }
+    } catch (err) {
+      console.error('[submitAnswer/notifyAdmins]', err);
+    }
   }
 
   const populated = await Answer.findById(answer._id).populate('authorId', 'name');

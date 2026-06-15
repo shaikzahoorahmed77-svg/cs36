@@ -52,7 +52,8 @@ function splitIntoSections(text) {
   const blocks = {};
 
   // Each section starts with "N. SECTION NAME\n======..."  (3 or more = chars)
-  const sectionHeaderRegex = /\n(\d+\.\s+[^\n]+)\n={3,}\n/g;
+  // Be tolerant of CRLF (Windows) line endings and allow a header at file start
+  const sectionHeaderRegex = /(?:^|\r?\n)(\d+\.\s+[^\r\n]+)\r?\n={3,}\r?\n/g;
 
   const matches = [...text.matchAll(sectionHeaderRegex)];
   for (let i = 0; i < matches.length; i++) {
@@ -71,7 +72,8 @@ function parseQAs(body) {
   const pairs = [];
 
   // Match "Q<num>.<num>: Question\nA: Answer" up until the next Q or end.
-  const qaRe = /(Q\d+\.\d+):\s+(.+?)\nA:\s+([\s\S]*?)(?=\nQ\d+\.\d+:|$)/g;
+  // Allow CRLF windows line endings in the lookahead and A: separator.
+  const qaRe = /(Q\d+\.\d+):\s+(.+?)\r?\nA:\s+([\s\S]*?)(?=\r?\nQ\d+\.\d+:|$)/g;
 
   let m;
   while ((m = qaRe.exec(body)) !== null) {

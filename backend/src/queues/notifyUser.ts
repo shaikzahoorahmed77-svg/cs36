@@ -12,6 +12,12 @@ export function addNotifyJob(data: { userId: string; type: string; message: stri
 
 new Worker('notifyUser', async (job) => {
   const { userId, type, message, link } = job.data;
-  const notification = await Notification.create({ userId, type, message, link });
-  console.log(`[notifyUser] notification=${notification._id} user=${userId} type=${type}`);
+  console.log(`[notifyUser] Processing job=${job.id} type=${type} user=${userId}`);
+  try {
+    const notification = await Notification.create({ userId, type, message, link });
+    console.log(`[notifyUser] Created notification=${notification._id} user=${userId} type=${type}`);
+  } catch (error) {
+    console.error(`[notifyUser] Error processing job=${job.id}:`, error);
+    throw error;
+  }
 }, { connection });
