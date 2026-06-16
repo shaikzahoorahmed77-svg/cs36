@@ -56,8 +56,8 @@ Base unit: `4px`. Scale: `4, 8, 12, 16, 24, 32, 48, 64, 96`
 └──────┬────────────┬────────┬────────┬──────────┬────────────────┘
        │            │        │        │          │
    ┌───▼───┐   ┌────▼────┐ ┌─▼────┐ ┌─▼────┐  ┌─▼─────┐
-   │Postgres│  │ Redis   │ │BullMQ│ │ AI   │  │pgvec  │
-   │Prisma  │  │Cache   │ │Queue │ │Models│  │Search │
+   │MongoDB│  │ Redis   │ │BullMQ│ │ AI   │  │TF-IDF  │
+   │Mongoose  │  │Cache   │ │Queue │ │Models│  │Search │
    └────────┘  └─────────┘ └──────┘ └──────┘  └────────┘
 ```
 
@@ -138,7 +138,7 @@ UNIQUE(userId, answerId)
 ```
 id           UUID (PK)
 userId       UUID (FK → User)
-type         ENUM('answer_received', 'answer_approved', 'faq_published', 'upvote_milestone', 'review_needed')
+type         ENUM('answer_received', 'answer_approved', 'faq_published', 'upvote_milestone', 'review_needed', 'NEW_QUESTION_ASKED', 'NEW_ANSWER_PENDING')
 referenceId  UUID  -- related question/answer ID
 read         BOOLEAN DEFAULT false
 createdAt    TIMESTAMP
@@ -165,6 +165,7 @@ GET    /api/questions/:id        -- Get question + answers
 PATCH  /api/questions/:id        -- Update question
 DELETE /api/questions/:id        -- Delete (author/admin)
 GET    /api/questions/:id/answers-- Get answers for question
+PATCH  /api/questions/faqs/:id/click -- Increment FAQ search count
 ```
 
 ### Answers
@@ -189,6 +190,9 @@ POST   /api/admin/answers/:id/approve
 POST   /api/admin/answers/:id/reject
 GET    /api/admin/stats           -- Dashboard stats
 POST   /api/admin/moderators      -- Promote user to moderator
+POST   /api/admin/faqs            -- Create manual FAQ
+PATCH  /api/admin/faqs/:id        -- Edit FAQ
+DELETE /api/admin/faqs/:id        -- Delete FAQ
 ```
 
 ### Notifications
@@ -209,7 +213,7 @@ POST   /api/notifications/read-all
 - Endpoint: `/embed` service using HuggingFace Inference API or local Transformers.js
 
 ### 6.2 Semantic Search
-- Method: pgvector `cosine_distance` similarity search
+- Method: TF-IDF cosine similarity search over FAQ knowledge base
 - Threshold: `< 0.25` → likely duplicate / return existing FAQ answer
 - Flow: student asks → search FAQs → if match found return instantly
 
@@ -295,7 +299,7 @@ rate:limit:<userId>        → request rate limiter
 - JWT access tokens (15min) + refresh tokens (7 days, stored in httpOnly cookie)
 - Rate limiting: 100 req/min per IP, 10 question submits/hour per user
 - Input validation: Zod schemas on all endpoints
-- SQL injection: prevented by Prisma ORM
+- NoSQL injection: prevented by Mongoose schema enforcement and input validation
 - XSS: React escapes by default; sanitize user HTML if rich text allowed
 - RBAC: role-based middleware on admin routes
 - CORS: whitelist only frontend origin
@@ -305,14 +309,17 @@ rate:limit:<userId>        → request rate limiter
 ## 11. Tech Versions
 
 ```
-Node.js:       v20+
-Next.js:       v14+ (App Router)
-TypeScript:    v5+
-Tailwind CSS:  v3+
-Express:       v4+
-Prisma:        v5+
-pgvector:      (Postgres extension)
-Redis:         v7+
-BullMQ:        v5+
-pg:            v8+
+Node.js: v18+ 
+Next.js: v14+ (App Router) 
+TypeScript: v5+ 
+Tailwind CSS: v3+ 
+Express.js: v4+ 
+MongoDB: v7+ 
+Mongoose: v8+ 
+Redis: v7+ 
+BullMQ: v5+ 
+JWT: Latest 
+React Query: Latest 
+shadcn/ui: Latest 
+Axios: Latest
 ```

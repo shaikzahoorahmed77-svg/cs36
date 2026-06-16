@@ -74,6 +74,7 @@ internship-platform/
 | POST | `/api/v1/answers` | Submit an answer (goes to BullMQ moderation queue) |
 | GET | `/api/v1/answers?authorId=` | Get user's approved answers with question titles |
 | PATCH | `/api/v1/answers/:id/vote` | Upvote/downvote an answer |
+| PATCH | `/api/v1/questions/faqs/:id/click` | Record FAQ click and increment view count |
 | PATCH | `/api/v1/notifications/read` | Mark all notifications as read |
 | DELETE | `/api/v1/notifications/:id` | Delete a notification |
 
@@ -86,6 +87,8 @@ internship-platform/
 | DELETE | `/api/v1/admin/answers/:id` | Reject / delete answer permanently |
 | POST | `/api/v1/admin/answers/:id/faq` | Add answer to FAQ without approving |
 | GET | `/api/v1/admin/faqs` | List all FAQs (paginated) |
+| POST | `/api/v1/admin/faqs` | Create manual FAQ entry |
+| PATCH | `/api/v1/admin/faqs/:id` | Edit FAQ question, answer, and tags |
 | DELETE | `/api/v1/admin/faqs/:id` | Delete an FAQ |
 | GET | `/api/v1/admin/users` | List all users |
 | PATCH | `/api/v1/admin/users/:id/role` | Change user role (STUDENT ↔ ADMIN) |
@@ -281,7 +284,6 @@ The moderation worker in `moderateAnswer.ts` must call `approveAnswer()` (the se
 - Categories page (`/admin/categories`) is UI-only — no backend
 - No email/push notifications — BullMQ queues fire but delivery is stubbed/not integrated
 - Analytics page shows real counts but no historical chart data
-- No pagination on admin question/answer lists (all items loaded at once)
 
 ---
 
@@ -300,4 +302,4 @@ The moderation worker in `moderateAnswer.ts` must call `approveAnswer()` (the se
 
 ---
 
-_Last updated: 2026-06-03_
+_Last updated: 2026-06-16_
