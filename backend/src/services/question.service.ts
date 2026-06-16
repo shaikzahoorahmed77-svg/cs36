@@ -80,11 +80,11 @@ export async function getQuestionById(id: string) {
   const question = await Question.findById(id).populate('authorId', 'name email');
   if (!question) return null;
 
-  // Fetch answer count
-  const answerCount = await Answer.countDocuments({ questionId: id, isApproved: true });
+  // Fetch answer count (all answers)
+  const answerCount = await Answer.countDocuments({ questionId: id });
 
-  // Fetch approved answers separately
-  const answersRaw = await Answer.find({ questionId: id, isApproved: true })
+  // Fetch all answers (including pending)
+  const answersRaw = await Answer.find({ questionId: id })
     .populate('authorId', 'name')
     .sort({ voteScore: -1 });
 

@@ -63,11 +63,12 @@ export interface FAQ {
 export interface Notification {
   id: string;
   userId: string;
-  type: "answer_received" | "answer_approved" | "faq_published" | "upvote_milestone" | "review_needed";
-  referenceId: string;
+  type: string;
+  referenceId?: string;
   isRead: boolean;
   createdAt: string;
   message?: string;
+  link?: string;
 }
 
 export interface PaginatedResponse<T> {

@@ -9,18 +9,19 @@ A Q&A platform where students post internship questions, get community answers, 
 ## Features
 
 ### For Students
-- **Browse & Ask**: Browse community questions, upvote/downvote, and ask new internship questions.
-- **Search FAQs**: Fast semantic keyword search across published FAQs.
-- **FAQ Detail Modal**: Click any FAQ search result card to view the verified answer in a dedicated modal overlay.
-- **Click Tracking**: Reads and records view/search counts for popular FAQs (`PATCH /api/v1/questions/faqs/:id/click`).
-- **Profile & Notifications**: View personal Q&A logs, with real-time notification alerts when answers are approved/rejected.
+- Browse, search, and ask questions
+- Submit answers — goes through automated moderation before publishing
+- Upvote/downvote answers
+- Profile page with your questions and approved answers
+- Notifications when your answer is approved or rejected
 
 ### For Admins
-- **Admin Dashboard**: Overview metrics, user role management, and quick links to all main modules.
-- **Answer Review & Moderation**: Expand questions to approve/reject student answers. Student answers are held for manual moderation rather than being auto-published.
-- **Manual FAQ Management**: Add new official FAQs manually or edit existing FAQs with updated questions/tags.
-- **Real-Time Alert Notifications**: Automatically receives notifications when new questions are asked (`NEW_QUESTION_ASKED`) or new answers are submitted (`NEW_ANSWER_PENDING`).
-- **AI Duplicate & Moderation Pipelines**: Automatically screens and blocks duplicate FAQs (TF-IDF similarity check) and filters offensive content.
+- Unified Questions review page — see all questions with pending answers, expand to review each answer
+- Approve → answer added to FAQ, student notified, question marked `ANSWERED`
+- Reject → answer permanently deleted
+- Duplicate detection — similar FAQs are blocked (TF-IDF cosine similarity ≥ 40%)
+- Keyword blocklist moderation — profanity/spam auto-rejected, rude content flagged for review
+- Manage users (promote/demote), browse/delete FAQs, view analytics
 
 ### Moderation Pipeline
 ```
@@ -29,7 +30,7 @@ Student submits answer
   BullMQ job queued
        ↓
   Keyword blocklist check
-       ├── APPROVE → FAQ created, student notified, question → ANSWERED
+       ├── APPROVE → FAQ created, student notified, question → ANSWERED 
        ├── FLAG    → stays PENDING in admin review queue
        └── REJECT  → permanently deleted
 ```

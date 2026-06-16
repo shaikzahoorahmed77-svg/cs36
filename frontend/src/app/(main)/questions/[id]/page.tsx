@@ -223,7 +223,10 @@ function QuestionDetailContent() {
                           <span className="text-xs text-muted-foreground">
                             answered {formatRelativeTime(answer.createdAt)}
                           </span>
-                          {answer.moderationScore != null && answer.moderationScore > 0.5 && (
+                          {answer.status === "PENDING" && (
+                            <Badge variant="warning" className="text-[10px]">Pending Approval</Badge>
+                          )}
+                          {answer.moderationScore != null && answer.moderationScore > 0.5 && answer.status !== "PENDING" && (
                             <Badge variant="warning" className="text-[10px]">Under Review</Badge>
                           )}
                         </div>

@@ -30,23 +30,36 @@ function StatCard({
 }
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<{
+    totalQuestions: number;
+    totalAnswers: number;
+    resolvedQuestions: number;
+    totalViews: number;
+  } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const user = getUser();
   const firstName = user?.name?.split(" ")[0] ?? "there";
 
   useEffect(() => {
-    questionsApi
-      .list({ limit: 10 })
-      .then(res => setQuestions(res.data.questions ?? []))
-      .catch(() => {})
+    Promise.all([
+      questionsApi.getStats().then(r => r.data),
+      questionsApi.list({ limit: 10 }).then(r => r.data.questions ?? []),
+    ])
+      .then(([statsData, questionsData]) => {
+        setStats(statsData);
+        setQuestions(questionsData);
+      })
+      .catch(err => {
+        console.error("Failed to load dashboard metrics", err);
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  const open = questions.filter(q => q.status === "OPEN").length;
-  const resolved = questions.filter(q => q.status === "RESOLVED").length;
-  const totalAnswers = questions.reduce((sum, q) => sum + (q.answerCount ?? 0), 0);
-  const totalViews = questions.reduce((sum, q) => sum + (q.views ?? 0), 0);
+  const totalQuestions = stats?.totalQuestions ?? 0;
+  const resolved = stats?.resolvedQuestions ?? 0;
+  const totalAnswers = stats?.totalAnswers ?? 0;
+  const totalViews = stats?.totalViews ?? 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 space-y-8">
@@ -67,9 +80,9 @@ export default function DashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Questions" value={loading ? "..." : questions.length} icon={BookOpen} color="text-primary" sub="in the community" />
+        <StatCard label="Questions" value={loading ? "..." : totalQuestions} icon={BookOpen} color="text-primary" sub="in the community" />
         <StatCard label="Answers" value={loading ? "..." : totalAnswers} icon={MessageSquare} color="text-secondary" sub="given so far" />
-        <StatCard label="Resolved" value={loading ? "..." : resolved} icon={CheckCircle} color="text-accent" sub={loading ? "" : `${questions.length > 0 ? Math.round((resolved / questions.length) * 100) : 0}% resolution`} />
+        <StatCard label="Resolved" value={loading ? "..." : resolved} icon={CheckCircle} color="text-accent" sub={loading ? "" : `${totalQuestions > 0 ? Math.round((resolved / totalQuestions) * 100) : 0}% resolution`} />
         <StatCard label="Total Views" value={loading ? "..." : totalViews.toLocaleString()} icon={ArrowUp} color="text-primary" sub="across all questions" />
       </div>
 

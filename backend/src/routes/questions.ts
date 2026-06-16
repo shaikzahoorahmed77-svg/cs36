@@ -85,6 +85,35 @@ router.post('/check-duplicates', authenticate, async (req: AuthRequest, res) => 
   }
 });
 
+// GET /questions/stats
+router.get('/stats', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { Question } = await import('../models/Question.js');
+    const { Answer } = await import('../models/Answer.js');
+
+    const [totalQuestions, totalAnswers, resolvedQuestions, viewsAggregation] = await Promise.all([
+      Question.countDocuments(),
+      Answer.countDocuments(),
+      Question.countDocuments({ status: 'RESOLVED' }),
+      Question.aggregate([
+        { $group: { _id: null, totalViews: { $sum: '$views' } } }
+      ])
+    ]);
+
+    const totalViews = viewsAggregation[0]?.totalViews ?? 0;
+
+    res.json({
+      totalQuestions,
+      totalAnswers,
+      resolvedQuestions,
+      totalViews
+    });
+  } catch (err) {
+    console.error('[questions/stats]', err);
+    res.status(500).json({ error: 'Failed to fetch statistics' });
+  }
+});
+
 // GET /questions/:id
 router.get('/:id', authenticate, async (req: AuthRequest, res) => {
   try {
