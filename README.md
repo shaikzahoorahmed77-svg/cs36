@@ -9,19 +9,18 @@ A Q&A platform where students post internship questions, get community answers, 
 ## Features
 
 ### For Students
-- Browse, search, and ask questions
-- Submit answers — goes through automated moderation before publishing
-- Upvote/downvote answers
-- Profile page with your questions and approved answers
-- Notifications when your answer is approved or rejected
+- **Browse & Ask**: Browse community questions, upvote/downvote, and ask new internship questions.
+- **Search FAQs**: Fast semantic keyword search across published FAQs.
+- **FAQ Detail Modal**: Click any FAQ search result card to view the verified answer in a dedicated modal overlay.
+- **Click Tracking**: Reads and records view/search counts for popular FAQs (`PATCH /api/v1/questions/faqs/:id/click`).
+- **Profile & Notifications**: View personal Q&A logs, with real-time notification alerts when answers are approved/rejected.
 
 ### For Admins
-- Unified **Questions** review page — see all questions with pending answers, expand to review each answer
-- **Approve** → answer added to FAQ, student notified, question marked `ANSWERED`
-- **Reject** → answer permanently deleted
-- Duplicate detection — similar FAQs are blocked (TF-IDF cosine similarity ≥ 40%)
-- Keyword blocklist moderation — profanity/spam auto-rejected, rude content flagged for review
-- Manage users (promote/demote), browse/delete FAQs, view analytics
+- **Admin Dashboard**: Overview metrics, user role management, and quick links to all main modules.
+- **Answer Review & Moderation**: Expand questions to approve/reject student answers. Student answers are held for manual moderation rather than being auto-published.
+- **Manual FAQ Management**: Add new official FAQs manually or edit existing FAQs with updated questions/tags.
+- **Real-Time Alert Notifications**: Automatically receives notifications when new questions are asked (`NEW_QUESTION_ASKED`) or new answers are submitted (`NEW_ANSWER_PENDING`).
+- **AI Duplicate & Moderation Pipelines**: Automatically screens and blocks duplicate FAQs (TF-IDF similarity check) and filters offensive content.
 
 ### Moderation Pipeline
 ```
@@ -137,11 +136,15 @@ internship-platform/
 | `/api/v1/auth/login` | POST | — | Login |
 | `/api/v1/questions` | GET | — | List/search questions |
 | `/api/v1/questions` | POST | STUDENT | Ask a question |
-| `/api/v1/answers` | POST | STUDENT | Submit answer (moderated) |
+| `/api/v1/questions/faqs/:id/click` | PATCH | STUDENT | Record FAQ click and increment view count |
+| `/api/v1/answers` | POST | STUDENT | Submit answer (goes to moderation) |
 | `/api/v1/answers/:id/vote` | PATCH | STUDENT | Upvote/downvote |
 | `/api/v1/admin/questions` | GET | ADMIN | Questions with pending answers |
 | `/api/v1/admin/answers/:id/approve` | PATCH | ADMIN | Approve → creates FAQ |
 | `/api/v1/admin/answers/:id` | DELETE | ADMIN | Reject → delete answer |
+| `/api/v1/admin/faqs` | POST | ADMIN | Create a manual FAQ entry |
+| `/api/v1/admin/faqs/:id` | PATCH | ADMIN | Edit an FAQ's details and tags |
+| `/api/v1/admin/faqs/:id` | DELETE | ADMIN | Delete an FAQ entry |
 | `/api/v1/admin/users/:id/role` | PATCH | ADMIN | Change user role |
 
 Full endpoint documentation: [context.md](./context.md)
@@ -189,3 +192,22 @@ npx tsx scripts/seed-faqs.js
 # Run E2E smoke test
 npx tsx scripts/test-live-flow.mjs
 ```
+
+---
+
+## Development Team
+
+| Name | Role | Email |
+| :--- | :--- | :--- |
+| **Venkatesh Buddhi** | Team Lead | [venkateshbuddhi887@gmail.com](mailto:venkateshbuddhi887@gmail.com) |
+| **Neha Korrapati** | Developer | [korrapatineha9@gmail.com](mailto:korrapatineha9@gmail.com) |
+| **Peyala Ananda Naidu** | Developer | [anandanaidupeyala@gmail.com](mailto:anandanaidupeyala@gmail.com) |
+| **Chavali Chandan Kumar** | Developer | [chandanchavali@gmail.com](mailto:chandanchavali@gmail.com) |
+| **Manogna Biyya** | Developer | [manognampt@gmail.com](mailto:manognampt@gmail.com) |
+| **Deepthi Penugonda** | Developer | [penugondadeepthi6@gmail.com](mailto:penugondadeepthi6@gmail.com) |
+| **K Rohith** | Developer | [kudimirohith@gmail.com](mailto:kudimirohith@gmail.com) |
+| **G. Teja Sri** | Developer | [gogulatejasri@gmail.com](mailto:gogulatejasri@gmail.com) |
+| **Chandragiri Sai Tharun** | Developer | [chandragirisaitharun71@gmail.com](mailto:chandragirisaitharun71@gmail.com) |
+| **Boeni Poojitha** | Developer | [boenipoojitha@gmail.com](mailto:boenipoojitha@gmail.com) |
+| **Shaik Mohammed Zahoor Ahmed** | Developer | [shaikzahoorahmed.77@gmail.com](mailto:shaikzahoorahmed.77@gmail.com) |
+| **Sneha Rawat** | Developer | [sneharawat055@gmail.com](mailto:sneharawat055@gmail.com) |
